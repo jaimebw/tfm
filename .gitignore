@@ -1,3 +1,7 @@
+# Data files
+data/1st_test
+data/2nd_test
+data/3th_test
 # Latex Files
 *.out
 *.loc
