@@ -2,6 +2,7 @@
 data/1st_test
 data/2nd_test
 data/3th_test
+*.pkl
 # Latex Files
 *.out
 *.loc

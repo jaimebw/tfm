@@ -11,3 +11,6 @@ The next table shows the general features of each set.
 | 1  | 22/10/2003  | 25/11/2003  | 2156  | 4  | 8  | Every 10 min exceot first 43 (5min)  | ASCII  |  Test to failure experiment, inner race defect ocurred in bearing 3 and roller element defect in bearing 4 |
 | 2  | 12/02/2004  | 19/02/2003  | 984  | 4  | 4  | 10 min   | ASCII  | Test to failure, outer race failure occured in bearing 1  |
 | 3 | 4/03/2004 |4/04/2004 |4448 |4 |4 |10 min |ASCII | Test to failure, outer race failure ocurred in bearing 3 |
+
+The setup is installed as shown on the next image.
+![Setup](img/setup.png)
