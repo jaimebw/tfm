@@ -3,14 +3,14 @@
 # data at once.
 # Example: 1st_test --> will create 1st_test.hdf5
 import os
-import json
 import datetime
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
-import pickle
 
 def str_datetime(file_name) :
+    # Get unix timestamp from the file name
+    # Example: "2008.01.10.22.20.00" --> 1200000000
     date = file_name.split(".")
     date = list(map(int, date))
     date = datetime.datetime(*date)
@@ -31,7 +31,12 @@ def join_files(path_to_dir,data_format = "pkl",n_cols = 8):
         os.mkdir(final_dir)
     files = os.listdir(path_to_dir)
     files.sort()
-    
+    if (".DS_Store" or ".ipynb_checkpoints") in files:
+        files = set(files)
+        files.discard(".DS_Store")
+        files.discard(".ipynb_checkpoints")
+        files = list(files)
+
     DF = pd.DataFrame()
     num_files = len(files)
     files_count = 0 # counts the number of times that
@@ -41,7 +46,9 @@ def join_files(path_to_dir,data_format = "pkl",n_cols = 8):
         cols = ["b1_ch1","b1_ch2","b2_ch3","b2_ch4","b3_ch5","b3_ch6","b4_ch7","b4_ch8"]
         if n_cols == 4:
             cols = ["b1_ch1","b2_ch2","b3_ch3","b4_ch4"]
+        
         df = pd.read_csv(dir_file, delimiter = "\t",names = cols)
+        
         init_date = str_datetime(file)
         df = df.astype("float32")
         
@@ -90,9 +97,13 @@ def join_end(final_dir,dir_name,data_format = "pkl",delete_secondary_files = Tru
             path_to_file = os.path.join(final_dir,file)
             os.remove(path_to_file)
     DF = DF.sort_values(by = ["timestamp"],ignore_index= True)
-    DF.to_pickle("{}_full.{}".format(
-        dir_name,"pkl"
-    ))
-    
+    if data_format == "pkl":
+        DF.to_pickle("{}_full.{}".format(
+            dir_name,"pkl"
+        ))
+    else:
+        DF.to_pickle("{}_full.{}".format(
+            dir_name,"hdf"
+        ),key = dir_name)
 
 
