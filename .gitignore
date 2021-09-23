@@ -11,6 +11,8 @@ data/3th_test
 *.log
 *.pdf
 *.aux
+*.zip
+*.xlsx
 document/otros
 # Other files
 .DS_Store
