@@ -13,7 +13,6 @@ data/3th_test
 *.aux
 *.zip
 *.xlsx
-*.png
 document/otros
 # Other files
 .DS_Store

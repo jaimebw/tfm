@@ -24,3 +24,15 @@ def load_data(path,n_channels= 8):
     df["timestamp"] = np.arange(init_date,init_date + df.shape[0])
     df = df.set_index("timestamp")
     return df
+
+def save_fig(fig,fig_name,**kwargs):
+    # saves the figure to a common folder
+    import os
+    if not os.path.exists("figures"):
+        os.mkdir("figures")
+    fig.savefig(fname= "figures/{}".format(fig_name) , **kwargs)
+    
+def rms(values):
+    # return the Root Mean Square 
+    # More info at https://en.wikipedia.org/wiki/Root_mean_square
+    return np.sqrt(np.sum(values**2)/len(values))
