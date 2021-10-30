@@ -13,7 +13,7 @@ The next table shows the general features of each set.
 |Set number   |Start Date   |End Date   |No. of files   | No. of Bearing   |No. of channels   | Recording Interval  | Format  | Description  |
 |---|---|---|---|---|---|---|---|---|
 | 1  | 22/10/2003  | 25/11/2003  | 2156  | 4  | 8  | Every 10 min except first 43 (5min)  | ASCII  |  Test to failure experiment, inner race defect ocurred in bearing 3 and roller element defect in bearing 4 |
-| 2  | 12/02/2004  | 19/02/2003  | 984  | 4  | 4  | 10 min   | ASCII  | Test to failure, outer race failure occured in bearing 1  |
+| 2  | 12/02/2004  | 19/02/2004  | 984  | 4  | 4  | 10 min   | ASCII  | Test to failure, outer race failure occured in bearing 1  |
 | 3 | 4/03/2004 |4/04/2004 |4448 |4 |4 |10 min |ASCII | Test to failure, outer race failure ocurred in bearing 3 |
 
 Supposedly, the third dataset only contains recording until the April 4,2004 but after exploring the dataset, it has been found that there are recordings dated until the 18th of April.
