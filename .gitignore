@@ -3,6 +3,7 @@ data/1st_test
 data/2nd_test
 data/3th_test
 *.pkl
+*.csv
 # Latex Files
 *.out
 *.loc

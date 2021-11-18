@@ -36,3 +36,19 @@ def rms(values):
     # return the Root Mean Square 
     # More info at https://en.wikipedia.org/wiki/Root_mean_square
     return np.sqrt(np.sum(values**2)/len(values))
+
+def spree_plot(pca_object,fig_title=None,fig_name = None,**kwargs):
+    # returns a spree plot from a PCA object
+    per_var = np.round(pca_object.explained_variance_ratio_* 100, decimals=1)
+    labels = ['PC' + str(x) for x in range(1, len(per_var)+1)]
+    fig, ax = plt.subplots()
+    ax.bar(x = range(1,len(per_var)+1),height=per_var, tick_label=labels)
+    ax.set_ylabel('Percentage of Explained Variance')
+    ax.set_xlabel('Principal Component')
+    if fig_title:
+        ax.set_title("Scree Plot")
+    else:
+        ax.set_title(fig_title)
+    if fig_name:
+        save_fig(fig,fig_name,**kwargs)
+def 
