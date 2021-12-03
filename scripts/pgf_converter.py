@@ -9,7 +9,6 @@
     #     \caption{Your caption}
     # \end{figure}
 import sys
-from tqdm import tqdm
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -136,21 +135,22 @@ def scatter_mean_abs_general_stats(df,dataset_name):
     with plt.style.context('seaborn-paper'):
         myFmt = mdates.DateFormatter('%d/%m')
         fig,ax = plt.subplots()
-        ax.scatter(df1.b1_ch1,label = "Bearing 1 C-X")
-        ax.scatter(df1.b1_ch2,label = "Bearing 1 C-Y ")
-        ax.scatter(df1.b2_ch3,label = "Bearing 2 C-X")
-        ax.scatter(df1.b2_ch4,label = "Bearing 2 C-Y")
-        ax.scatter(df1.b3_ch5,label = "Bearing 3 C-X")
-        ax.scatter(df1.b3_ch6,label = "Bearing 3 C-Y")
-        ax.scatter(df1.b4_ch7,label = "Bearing 4 C-X")
-        ax.scatter(df1.b4_ch8,label = "Bearing 4 C-Y")
+        x = df1.index
+        ax.scatter(x,df1.b1_ch1,label = "Bearing 1 C-X",alpha=0.7,marker="x")
+        ax.scatter(x,df1.b1_ch2,label = "Bearing 1 C-Y ",alpha=0.7,marker="^")
+        ax.scatter(x,df1.b2_ch3,label = "Bearing 2 C-X",alpha=0.7,marker="x")
+        ax.scatter(x,df1.b2_ch4,label = "Bearing 2 C-Y",alpha=0.7,marker="^")
+        ax.scatter(x,df1.b3_ch5,label = "Bearing 3 C-X",alpha=0.7,marker="x")
+        ax.scatter(x,df1.b3_ch6,label = "Bearing 3 C-Y",alpha=0.7,marker="^")
+        ax.scatter(x,df1.b4_ch7,label = "Bearing 4 C-X",alpha=0.7,marker="x")
+        ax.scatter(x,df1.b4_ch8,label = "Bearing 4 C-Y",alpha=0.7,marker="^")
         ax.set_xlabel ("Days")
         ax.legend()
         ax.xaxis.set_major_formatter(myFmt)
         ax.grid()
         ax.set_title("Scatter plot of absolute mean of the bearing vibration snapshots")
         #save_fig(fig,"{}.png".format(dataset_name),figsize = (12,6),dpi = 300)
-        fig.savefig(dataset_name+".pgf")
+        fig.savefig(dataset_name+".pdf")
 
 def load_data():
     global df1,df2,df3
@@ -163,7 +163,7 @@ def df1_rep():
         index = index +1 
         plot_rms_general_stats(i,str(pgf_imgs/f"rms_dataset{index}"))
         plot_mean_abs_general_stats(i,str(pgf_imgs/f"mean_abs_dataset{index}"))
-        scatter_mean_abs_general_stats(i,str(pgf_imgs/f"mean_abs_dataset{index}"))
+        scatter_mean_abs_general_stats(i,str(pgf_imgs/f"scatter_mean_abs_dataset{index}"))
         plot_rolling_average_stats(i,str(pgf_imgs/f"rolling_ave_period_10_dataset{index}"),10)
         plot_rolling_average_stats(i,str(pgf_imgs/f"rolling_ave_period_20_dataset{index}"),20)
         plot_rolling_average_stats(i,str(pgf_imgs/f"rolling_ave_period_50_dataset{index}"),50)
