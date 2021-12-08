@@ -15,6 +15,9 @@ pic_for_thesis
 *.aux
 *.zip
 *.xlsx
+*.pgf
+*.pptx
+books/cell_data
 document/otros
 # Other files
 .DS_Store
@@ -157,3 +160,4 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+

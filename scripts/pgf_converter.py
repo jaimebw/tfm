@@ -28,7 +28,7 @@ pgf_imgs = Path("pgf_img")
 if not pgf_imgs.exists():
     pgf_imgs.mkdir()
 
-def rms(values):
+def get_rms(values):
     # return the Root Mean Square 
     # More info at https://en.wikipedia.org/wiki/Root_mean_square
     return np.sqrt(np.sum(values**2)/len(values))
@@ -67,7 +67,7 @@ def plot_rolling_average_stats(df,dataset_name,period):
 
 def plot_rms_general_stats(df,dataset_name):
     cols = df.columns.to_list()[:-1]
-    df1 = df.groupby(["timestamp"])[cols].apply(rms).reset_index()
+    df1 = df.groupby(["timestamp"])[cols].apply(get_rms).reset_index()
     df1.index = pd.to_datetime(df1.timestamp,unit='s')
     with plt.style.context('seaborn-paper'):
         myFmt = mdates.DateFormatter('%d/%m')
