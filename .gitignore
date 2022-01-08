@@ -3,8 +3,11 @@ data/1st_test
 data/2nd_test
 data/3th_test
 pic_for_thesis
+figures
 *.pkl
 *.csv
+*.tex
+notas.md
 # Latex Files
 *.out
 *.loc

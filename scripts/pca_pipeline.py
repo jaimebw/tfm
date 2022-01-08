@@ -67,7 +67,7 @@ Results_df = pd.DataFrame()
 features_paths = []
 for i in input_data_path.glob("*"):
     if i.is_dir():
-        for j in i.glob("*"):
+        for j in i.glob("*.pkl"):
             features_paths.append(j)
 #features_paths = features_paths[0:2]
 for index,feature_data in enumerate(features_paths):
