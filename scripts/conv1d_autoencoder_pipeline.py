@@ -1,4 +1,3 @@
-from os import wait
 import pandas as pd
 import numpy as np
 import torch
@@ -7,8 +6,6 @@ from sklearn import preprocessing
 import time
 from torch import nn
 from tqdm import tqdm
-
-
 
 feature_names = {"rms":"Root Mean Square",
         "mean_abs":"Absolute Mean",
@@ -20,21 +17,34 @@ feature_names = {"rms":"Root Mean Square",
         "skew": "Skewness"
         }
 fail_dates = ("25/11/2003","19/02/2004","18/04/2004")
-class LinealAutoencoder(nn.Module):
-    def __init__(self):
+def get_tensor(X:np.ndarray):
+    Xt = torch.empty(len(X),4,1)
+    for index,data_row in enumerate(X):
+        Xt[index] = torch.from_numpy(data_row).unsqueeze(0).transpose(1,0)
+    return Xt
+
+
+def get_numpy(X):
+    x = X.detach().numpy()
+    x = x.reshape(x.shape[0],4)
+    return x
+
+class ConvAutoEncoder(nn.Module):
+    def __init__(self,n_components):
+        self.n_components = n_components
         super().__init__()
         self.encoder = nn.Sequential(
-            nn.Linear(4,10),
+            nn.Conv1d(4,12,stride =3,kernel_size = 2,padding = 1),
             nn.ReLU(),
-            nn.Linear(10,5),
+            nn.Conv1d(12,24,stride = 3, kernel_size = 2,padding = 1),
             nn.ReLU(),
-            nn.Linear(5,2))
+            nn.Conv1d(24,self.n_components,stride = 3, kernel_size = 2,padding = 1))
         self.decoder = nn.Sequential(
-            nn.Linear(2,5),
+            nn.ConvTranspose1d(self.n_components,24,stride = 2, kernel_size = 1),
             nn.ReLU(),
-            nn.Linear(5,10),
+            nn.ConvTranspose1d(24,12,stride = 2, kernel_size = 1),
             nn.ReLU(),
-            nn.Linear(10,4))
+            nn.ConvTranspose1d(12,4,stride =2,kernel_size = 1))
     def forward(self,x):
         encoded = self.encoder(x)
         decoded = self.decoder(encoded)
@@ -44,7 +54,7 @@ EPOCHS = 5000
 start_time = time.time()
 df_columns = ["b1","b2","b3","b4"]
 input_data_path = Path("../data/feature_data")
-output_data_path = Path("../data/lineal_autoencoder_results/")
+output_data_path = Path("../data/conv_autoencoder_results/")
 output_plots_path = output_data_path/"plots"
 if not output_data_path.exists():
     output_data_path.mkdir()
@@ -88,9 +98,9 @@ for index,feature_data in enumerate(features_paths):
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
     X_train = X_train + np.random.normal(X_train.mean(),X_train.std(),size = X_train.shape)
-    X_train = torch.from_numpy(X_train).float()
-    X_test = torch.from_numpy(X_test).float()
-    model = LinealAutoencoder()
+    X_train = get_tensor(X_train)
+    X_test = get_tensor(X_test)
+    model = ConvAutoEncoder(2)
     loss_crit = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(),lr= 1e-3,weight_decay=1e-5)
     epochs = EPOCHS
@@ -100,21 +110,23 @@ for index,feature_data in enumerate(features_paths):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-    
     with torch.no_grad():
         test_recon = model(X_test)
         loss_test = loss_crit(test_recon,X_test)
     print(f"Train loss:{loss.item()}\t Test_loss:{loss_test.item()}")
-    df_train = pd.DataFrame(recon.detach().numpy(),train_index,columns = df_columns)
-    df_test = pd.DataFrame(test_recon.detach().numpy(),test_index,columns = df_columns)
-    test_mae = np.mean(np.abs(test_recon.numpy()-X_test.numpy()),axis = 1)
+    test_recon = get_numpy(test_recon)
+    recon = get_numpy(recon)
+    df_train = pd.DataFrame(recon,train_index,columns = df_columns)
+    df_test = pd.DataFrame(test_recon,test_index,columns = df_columns)
+    test_mae = np.mean(np.abs(test_recon-get_numpy(X_test)),axis = 1)
     df_test["mae"] = test_mae
     anomaly_day = df_test.loc[df_test.mae>=0.3].index[0]
+    #results = pd.DataFrame({"Feature":data_name,"feature_number":dataset_number,"detection_day":anomaly_day,
+    #    "train_loss":loss.item(),"test_loss":loss_test.item()},index = [index])
     results = pd.DataFrame({"Label":data_label,"Feature":data_name,"feature_number":dataset_number,"detection_day":anomaly_day,
         "train_loss":loss.item(),"test_loss":loss_test.item(),"Failure date":fail},index = [index])
     combined_results = combined_results.append(results)
-    df_test.to_pickle(output_data_path/f"lineal_autoencoder_{data_name}.pkl")
-combined_results.to_csv(output_data_path/"lineal_autoencoder_results.csv")
+    df_test.to_pickle(output_data_path/f"conv1d_autoencoder_{data_name}.pkl")
+combined_results.to_csv(output_data_path/"conv1d_autoencoder_results.csv")
 end_time = time.time()-start_time
 print(end_time)
-
