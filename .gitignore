@@ -8,6 +8,7 @@ figures
 *.csv
 *.tex
 notas.md
+data/bearings_data
 # Latex Files
 *.out
 *.loc

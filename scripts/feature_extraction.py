@@ -27,7 +27,7 @@ if not features_data_path.exists():
 data_set_paths = [Path("../data/1st_test_full.pkl"), 
 Path("../data/2nd_test_full.pkl") ,Path("../data/3th_test_full.pkl")]
 
-features_to_extract = ["mean_abs","rms","sfactor","kurt","skew","rolling_avg"]
+features_to_extract = ["rolling_avg"]
 for index,df_path in enumerate(data_set_paths):
     for feature in features_to_extract:
         print(f"Feature:{feature} \t Dataset:{str(df_path.name)}\n")
@@ -47,9 +47,15 @@ for index,df_path in enumerate(data_set_paths):
         elif feature == "sfactor":
             df1 = df.groupby(["timestamp"]).apply(get_shapefactor)
         elif feature == "rolling_avg":
+            periods = [10,20,30,50]
+            df = df.abs()
+            df1 = df.groupby(["timestamp"]).mean()
+            for period in periods:
+                df2 = df1.rolling(window = period).mean()
+                df2.index = pd.to_datetime(df2.index, unit="s")
+                df2.to_pickle(feature_path/f"{feature}_{period}_{index+1}.pkl") 
             break
         else:
-            print("Fin blucle")
             break
         try:
             df1.drop(columns=["timestamp"], inplace=True)

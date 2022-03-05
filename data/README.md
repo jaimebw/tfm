@@ -64,3 +64,6 @@ join_end("3th_test_pickle","3th_test") # joins all the data as a file
 Further instruccions may be found inside the code.
 ## Final Datasets
 The fully joined datasets will be available for downlading in the next weeks.
+
+## Features of the data
+The extracted features of the data is available in features data

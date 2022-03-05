@@ -6,6 +6,8 @@ TO-DO:
     4. Obtain the plots and confussion matrix[]
 """
 from pathlib import Path
+import warnings
+warnings.filterwarnings("ignore")
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,6 +20,15 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from matplotlib import font_manager
+from sklearn.model_selection import KFold
+
+
+def label_dist(label):
+    one_n = np.count_nonzero(label==1)
+    zero_n = np.count_nonzero(label==0)
+    return print(f"Unos:{one_n}\t Ceros:{zero_n}")
+
+kf = KFold(n_splits=5)
 font_dirs = ['../otros/lmr']
 font_files = font_manager.findSystemFonts(fontpaths=font_dirs)
 for font_file in font_files:
@@ -33,6 +44,18 @@ def plot_roc_curve(y_test,y_pred,fname):
         ax.set_ylabel("True Positive Rate")
         fig.savefig(fname,dpi = 300)
 
+def gen_score(y_test,y_pred,feature_name,algo_name,panda_index = 0):
+    accuracy = accuracy_score(y_test,y_pred)
+    precission = precision_score(y_test,y_pred)
+    f1 = f1_score(y_test,y_pred)
+    recall = recall_score(y_test,y_pred)
+    try:
+        roc_score = roc_auc_score(y_test,y_pred)
+    except:
+        roc_score =0
+    results = pd.DataFrame({"feature_name":feature_name,"algo":algo_name,"accuracy":accuracy,"precission":precission,
+        "f1":f1,"recall":recall,"roc_score":roc_score},index = [panda_index])
+    return results
 
 
 
@@ -43,10 +66,12 @@ forest  = RandomForestClassifier(random_state=RANDOM_STATE)
 algos = {"kneigh":kneigh,"dtree":dtree,"forest":forest}
 
 scaler = MinMaxScaler()
-input_labels = Path("../data/labels")
+input_labels ={"pca":Path("../data/labels/labels_pca"),
+        "lin_auto":Path("../data/labels/labels_lineal"),
+        "conv_auto":Path("../data/labels/labels_conv")}
 input_path = Path("../data/feature_data")
-output_path = Path("../data/classification_results")
-output_rocplots_path = output_path/"roc_plots"
+output_path = Path("../data/con_auto_classification_results")
+output_rocplots_path = output_path/"pca_roc_plots"
 
 if not output_path.exists():
     output_path.mkdir()
@@ -74,71 +99,49 @@ for data in features_paths:
 data1.sort()
 data2.sort()
 data3.sort()
-labels_paths = [i for i in input_labels.glob("*.pkl")]
+
+labels_paths = [i for i in input_labels["conv_auto"].glob("*.pkl")]
 labels_paths.sort()
 labels = [pd.read_pickle(i) for i in labels_paths]
+
+#labels_paths_lin= [i for i in input_labels["lin_auto"].glob("*.pkl")]
+#labels_paths_conv = [i for i in input_labels["conv_auto"].glob("*.pkl")]
 # 2. Add labels to the dataset and train
 outer_index = 0
 for index, dir_paths in enumerate([data1,data2,data3]):
-    
     training_results = pd.DataFrame()
     for data_paths in dir_paths:
         data_name = data_paths.stem
         print(f"Data set: {data_name}\n")
         df = pd.read_pickle(data_paths)
         df = df.join(labels[index])
+
         df.dropna(inplace = True) 
+        df = df.sample(int(len(df))) # it is need to shuffle the entire database to obtain good trainign resulst
         X = df[["b1_ch1","b2_ch2","b3_ch3","b4_ch4"]].values 
         print(len(X))
         y = df[["labels"]].values
         y = np.ravel(y)
         X = scaler.fit_transform(X)
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=RANDOM_STATE)
+        #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=RANDOM_STATE)
         # 3. Train algos
         for name,algo in algos.items():
-            algo.fit(X_train,y_train)
-            y_pred = algo.predict(X_test)
-            confusion_matrix, precision_score,f1_score,recall_score,accuracy_score 
-            accuracy = accuracy_score(y_test,y_pred)
-            precission = precision_score(y_test,y_pred)
-            f1 = f1_score(y_test,y_pred)
-            recall = recall_score(y_test,y_pred)
-            roc_score = roc_auc_score(y_test,y_pred)
-            plot_name = f"/roc_{data_name}_{name}.pdf"
-            plot_roc_curve(y_test,y_pred,str(output_rocplots_path)+plot_name) 
-            print(f"Algo: {name}\tDataset:{data_name}\tAccuracy:{accuracy}\tPrecission{precission}\tRecall:{recall}\tf1:{f1}\n")
-            algo_df = pd.DataFrame({
-                "algo":name,
-                "dataset":data_name,
-                "accuracy":accuracy,
-                "precission":precission,
-                "recall":recall,
-                "f1":f1,
-                "auc":roc_score
-
-            },index = [outer_index])
-            #algo_df["Algo"] = name
-            #algo_df["dataset"] = data_name
-            #algo_df["accuracy"] = accuracy
-            training_results = training_results.append(algo_df)
-            outer_index +=1 
-            print("-----------------------------------------------------\n")
-        training_results.to_csv(str(output_path)+f"/classification_results_set{index+1}.csv")
-
-
-
-"""
-Curva AUC
-import matplotlib.pyplot as plt
-import numpy as np
-from sklearn import metrics
-y = np.array([0, 0, 1, 1])
-pred = np.array([0.1, 0.4, 0.35, 0.8])
-fpr, tpr, thresholds = metrics.roc_curve(y, pred)
-roc_auc = metrics.auc(fpr, tpr)
-display = metrics.RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc,
-                                  estimator_name='example estimator')
-display.plot()
-
-plt.show()
-"""
+            fold_index =0
+            for train_index, test_index in kf.split(X):
+                X_train, X_test = X[train_index], X[test_index]
+                y_train, y_test = y[train_index], y[test_index]
+                print("Train")
+                label_dist(y_train)
+                print("Test")
+                label_dist(y_test)
+                algo.fit(X_train,y_train)
+                y_pred = algo.predict(X_test)
+                results = gen_score(y_test,y_pred,data_name,name,outer_index)
+                #plot_name = f"/roc_{data_name}_{name}.pdf"
+                #plot_roc_curve(y_test,y_pred,str(output_rocplots_path)+plot_name) 
+                print(f"Algo: {name}\tDataset:{data_name}\t Kfold: {fold_index}")
+                fold_index +=1
+                training_results = training_results.append(results)
+                outer_index +=1 
+                print("-----------------------------------------------------\n")
+        training_results.to_csv(str(output_path)+f"/conv_auto_classification_results_set{index+1}.csv")
