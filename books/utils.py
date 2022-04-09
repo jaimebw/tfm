@@ -2,6 +2,59 @@ import os
 import pandas as pd
 import numpy as np
 import datetime
+from pathlib import Path
+
+
+class ExperimentData:
+    def __init__(self,path_to_data):
+        if path_to_data:
+            self.path_to_data = Path(path_to_data)
+            self.data = pd.read_pickle(self.path_to_data)
+        self.df1 = Path("/Users/jaime/repos/tfm/data/1st_test_full.pkl")
+        self.df2 = Path("/Users/jaime/repos/tfm/data/2nd_test_full.pkl")
+        self.df3 = Path("/Users/jaime/repos/tfm/data/3rd_test_full.pkl")
+        
+    def full_df1(self):
+        return pd.read_pickle(self.df1)
+    
+    def full_df2(self):
+        return pd.read_pickle(self.df2)
+    
+    def full_df3(self):
+        return pd.read_pickle(self.df3)
+    
+    def features(self,dataset ,feature_type = "rms"):
+        """
+        Feature types:
+        - rms
+        - kurt
+        - skew
+        - sfactor: Shape Factor
+        """
+        if self.path_to_data:
+            df = self.data
+        else:
+            if dataset:
+                if dataset == "1":
+                    df = self.full_df1()
+                elif dataset == "2":
+                    df = self.full_df2()
+                else:
+                    df = self.full_df3()
+        
+
+        df = df.abs()
+        if feature_type == "rms":
+            df1 = df.groupby(["timestamp"]).apply(get_rms)
+        elif feature_type == "kurt":
+            df1 = df.groupby(["timestamp"]).apply(pd.DataFrame.kurt)
+        elif feature_type == "skew":
+            df1 = df.groupby(["timestamp"]).apply(pd.DataFrame.skew)
+        elif feature_type == "sfactor":
+            df1 = df.groupby(["timestamp"]).apply(get_shapefactor)
+        df1.drop(columns=["timestamp"], inplace=True)
+        df1.index = pd.to_datetime(df1.index, unit="s")
+        return df1
 
 
 def MahalanobisDist(inv_cov_matrix, mean_distr, data, verbose=False):
