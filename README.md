@@ -4,6 +4,7 @@ In order to clone this repository:
 
 ```git clone https://github.com/jaimebw/tfm.git```  
 
+The final document is available [here](https://1drv.ms/b/s!AtZPo3IfCae8gvdcc8GVCVtrKy4aIg?e=V2wp7s)
 # Directoris
 The directories inside this repo are organized by:
 * **books**: contains all the Jupyter Notebooks for this thesis
